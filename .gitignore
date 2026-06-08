@@ -1,0 +1,19 @@
+.gradle/
+build/
+/out/
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+
+# env
+.env
+
+# logs
+logs/
+*.log
+
+# docker volumes
+pgdata/

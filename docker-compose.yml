@@ -1,0 +1,10 @@
+name: spring-boot-template
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spring-boot-template-app
+    ports:
+      - "8080:8080"
