@@ -1,6 +1,11 @@
 spring:
   application:
     name: pokedex
-
-server:
-  port: 8080
+  cloud:
+    openfeign:
+      okhttp:
+        enabled: true
+      client:
+        config:
+          poke-api-client:
+            url: https://pokeapi.co/api/v2

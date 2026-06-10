@@ -33,6 +33,12 @@ repositories {
     mavenCentral()
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:2025.0.0")
+    }
+}
+
 val sourceSets = the<SourceSetContainer>()
 val test by sourceSets.getting {
     java.setSrcDirs(listOf("src/test/unitTest/java"))
@@ -73,10 +79,19 @@ dependencyLocking {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.cloud:spring-cloud-starter-openfeign")
+    implementation("io.github.openfeign:feign-okhttp")
     implementation("com.squareup.okhttp3:okhttp:5.4.0")
+    implementation("org.slf4j:slf4j-api")
     implementation("org.apache.commons:commons-lang3:3.20.0")
 
+    compileOnly("org.projectlombok:lombok:1.18.46")
+    annotationProcessor("org.projectlombok:lombok:1.18.46")
+    testCompileOnly("org.projectlombok:lombok:1.18.46")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.46")
+
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("com.squareup.okhttp3:mockwebserver:5.4.0")
 
     errorprone("com.google.errorprone:error_prone_core:2.43.0")
     errorprone("com.uber.nullaway:nullaway:0.12.9")

@@ -17,9 +17,9 @@ class HelloEndpointIntegrationTest {
 
     @Test
     void shouldExposeHelloWorldEndpoint() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/api/v1/hello_world", String.class);
+        ResponseEntity<String> response = restTemplate.getForEntity("/hello_world", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo("hello_world");
+        assertThat(response.getBody()).isEqualTo("Hello World!");
     }
 }
