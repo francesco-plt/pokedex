@@ -1,10 +1,10 @@
-name: spring-boot-template
+name: pokedex
 
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: spring-boot-template-app
+    container_name: pokedex-app
     ports:
       - "8080:8080"

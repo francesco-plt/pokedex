@@ -1,4 +1,4 @@
-package com.example.app.integration;
+package com.pokedex.app.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -17,9 +17,9 @@ class HelloEndpointIntegrationTest {
 
     @Test
     void shouldExposeHelloWorldEndpoint() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/api/v1/hw", String.class);
+        ResponseEntity<String> response = restTemplate.getForEntity("/api/v1/hello_world", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo("hw");
+        assertThat(response.getBody()).isEqualTo("hello_world");
     }
 }

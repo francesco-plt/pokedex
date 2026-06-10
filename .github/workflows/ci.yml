@@ -38,7 +38,7 @@ jobs:
 
       - name: Container Build Validation
         run: |
-          docker build -t demo-app:ci .
+          docker build -t pokedex:ci .
 
   dependency-review:
     if: github.event_name == 'pull_request'

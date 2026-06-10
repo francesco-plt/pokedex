@@ -17,7 +17,7 @@ plugins {
     id("org.owasp.dependencycheck") version "12.1.8"
 }
 
-group = "com.example"
+group = "com.pokedex"
 version = "0.1.0-SNAPSHOT"
 description = "Minimal Spring Boot starter with hello-world endpoint"
 
@@ -72,6 +72,9 @@ dependencyLocking {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("com.squareup.okhttp3:okhttp:5.4.0")
+    implementation("org.apache.commons:commons-lang3:3.20.0")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
@@ -88,7 +91,7 @@ tasks.withType<JavaCompile>().configureEach {
     options.errorprone {
         disable("EqualsGetClass")
         error("NullAway")
-        option("NullAway:AnnotatedPackages", "com.example.app")
+        option("NullAway:AnnotatedPackages", "com.pokedex.app")
     }
 
     if (name.contains("test", ignoreCase = true)) {

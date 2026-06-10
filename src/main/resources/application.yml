@@ -1,6 +1,6 @@
 spring:
   application:
-    name: spring-boot-template
+    name: pokedex
 
 server:
   port: 8080

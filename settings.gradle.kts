@@ -1,1 +1,1 @@
-rootProject.name = "demo-app"
+rootProject.name = "pokedex"
