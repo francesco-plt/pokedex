@@ -26,7 +26,10 @@ public class PokemonController {
     }
 
     @GetMapping("/translated/{name}")
-    public String getTranslatedPokemonDescription(@PathVariable String name) {
-        return "hello_world";
+    public PokemonResponse getTranslatedPokemonDescription(@PathVariable String name) {
+        return Optional.of(name)
+                .map(pokemonService::fetchTranslatedByName)
+                .map(PokemonResponseMapper::toPokemonResponse)
+                .orElseThrow();
     }
 }

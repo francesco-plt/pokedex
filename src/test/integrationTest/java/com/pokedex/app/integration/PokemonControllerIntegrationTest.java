@@ -23,6 +23,7 @@ import org.springframework.test.context.DynamicPropertySource;
 class PokemonControllerIntegrationTest {
 
     private static final MockWebServer POKE_API = startServer();
+    private static final MockWebServer FUN_TRANSLATIONS = startServer();
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -33,11 +34,19 @@ class PokemonControllerIntegrationTest {
             "spring.cloud.openfeign.client.config.poke-api-client.url",
             () -> POKE_API.url("/api/v2/").toString()
         );
+        registry.add(
+            "spring.cloud.openfeign.client.config.funtranslations-client.url",
+            () -> FUN_TRANSLATIONS.url("/").toString()
+        );
     }
 
     @AfterAll
-    static void shutdownServer() throws IOException {
-        POKE_API.shutdown();
+    static void shutdownServers() throws IOException {
+        try {
+            POKE_API.shutdown();
+        } finally {
+            FUN_TRANSLATIONS.shutdown();
+        }
     }
 
     @Test
@@ -154,6 +163,164 @@ class PokemonControllerIntegrationTest {
         RecordedRequest request = POKE_API.takeRequest(1, TimeUnit.SECONDS);
         assertThat(request).isNotNull();
         assertThat(request.getPath()).isEqualTo("/api/v2/pokemon-species/bulbasaur");
+    }
+
+    @Test
+    void shouldReturnPokemonWithShakespeareTranslationForNonLegendaryNonCavePokemon() throws Exception {
+        POKE_API.enqueue(
+            new MockResponse()
+                .setResponseCode(200)
+                .addHeader("Content-Type", "application/json")
+                .setBody("""
+                    {
+                      "name": "bulbasaur",
+                      "habitat": {"name": "forest"},
+                      "is_legendary": false,
+                      "flavor_text_entries": [
+                        {"flavor_text": "A strange seed was planted on its back."}
+                      ]
+                    }
+                    """)
+        );
+        FUN_TRANSLATIONS.enqueue(
+            new MockResponse()
+                .setResponseCode(200)
+                .addHeader("Content-Type", "application/json")
+                .setBody("""
+                    {
+                      "contents": {
+                        "translated": "A strange seed wast planted on its back."
+                      }
+                    }
+                    """)
+        );
+
+        ResponseEntity<PokemonResponse> response = restTemplate.getForEntity(
+            "/api/v1/pokemon/translated/bulbasaur",
+            PokemonResponse.class
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().name()).isEqualTo("bulbasaur");
+        assertThat(response.getBody().description()).isEqualTo("A strange seed wast planted on its back.");
+        assertThat(response.getBody().habitat()).isEqualTo("forest");
+        assertThat(response.getBody().isLegendary()).isFalse();
+
+        RecordedRequest pokeApiRequest = POKE_API.takeRequest(1, TimeUnit.SECONDS);
+        assertThat(pokeApiRequest).isNotNull();
+        assertThat(pokeApiRequest.getPath()).isEqualTo("/api/v2/pokemon-species/bulbasaur");
+
+        RecordedRequest translationRequest = FUN_TRANSLATIONS.takeRequest(1, TimeUnit.SECONDS);
+        assertThat(translationRequest).isNotNull();
+        assertThat(translationRequest.getPath()).isEqualTo("/translate/shakespeare");
+        assertThat(translationRequest.getMethod()).isEqualTo("POST");
+        assertThat(translationRequest.getBody().readUtf8())
+            .contains("\"text\":\"A strange seed was planted on its back.\"");
+    }
+
+    @Test
+    void shouldReturnPokemonWithYodaTranslationForCavePokemon() throws Exception {
+        POKE_API.enqueue(
+            new MockResponse()
+                .setResponseCode(200)
+                .addHeader("Content-Type", "application/json")
+                .setBody("""
+                    {
+                      "name": "zubat",
+                      "habitat": {"name": "cave"},
+                      "is_legendary": false,
+                      "flavor_text_entries": [
+                        {"flavor_text": "Forms colonies in perpetually dark places."}
+                      ]
+                    }
+                    """)
+        );
+        FUN_TRANSLATIONS.enqueue(
+            new MockResponse()
+                .setResponseCode(200)
+                .addHeader("Content-Type", "application/json")
+                .setBody("""
+                    {
+                      "contents": {
+                        "translated": "Colonies in dark places, forms it does."
+                      }
+                    }
+                    """)
+        );
+
+        ResponseEntity<PokemonResponse> response = restTemplate.getForEntity(
+            "/api/v1/pokemon/translated/zubat",
+            PokemonResponse.class
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().name()).isEqualTo("zubat");
+        assertThat(response.getBody().description()).isEqualTo("Colonies in dark places, forms it does.");
+        assertThat(response.getBody().habitat()).isEqualTo("cave");
+        assertThat(response.getBody().isLegendary()).isFalse();
+
+        RecordedRequest pokeApiRequest = POKE_API.takeRequest(1, TimeUnit.SECONDS);
+        assertThat(pokeApiRequest).isNotNull();
+        assertThat(pokeApiRequest.getPath()).isEqualTo("/api/v2/pokemon-species/zubat");
+
+        RecordedRequest translationRequest = FUN_TRANSLATIONS.takeRequest(1, TimeUnit.SECONDS);
+        assertThat(translationRequest).isNotNull();
+        assertThat(translationRequest.getPath()).isEqualTo("/translate/yoda");
+        assertThat(translationRequest.getMethod()).isEqualTo("POST");
+        assertThat(translationRequest.getBody().readUtf8())
+            .contains("\"text\":\"Forms colonies in perpetually dark places.\"");
+    }
+
+    @Test
+    void shouldReturnOriginalDescriptionWhenTranslationServiceIsUnavailable() throws Exception {
+        POKE_API.enqueue(
+            new MockResponse()
+                .setResponseCode(200)
+                .addHeader("Content-Type", "application/json")
+                .setBody("""
+                    {
+                      "name": "pikachu",
+                      "habitat": {"name": "forest"},
+                      "is_legendary": false,
+                      "flavor_text_entries": [
+                        {"flavor_text": "Electric type pokemon."}
+                      ]
+                    }
+                    """)
+        );
+        FUN_TRANSLATIONS.enqueue(
+            new MockResponse()
+                .setResponseCode(503)
+                .addHeader("Content-Type", "application/json")
+                .setBody("""
+                    {
+                      "error": "service unavailable"
+                    }
+                    """)
+        );
+
+        ResponseEntity<PokemonResponse> response = restTemplate.getForEntity(
+            "/api/v1/pokemon/translated/pikachu",
+            PokemonResponse.class
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().name()).isEqualTo("pikachu");
+        assertThat(response.getBody().description()).isEqualTo("Electric type pokemon.");
+        assertThat(response.getBody().habitat()).isEqualTo("forest");
+        assertThat(response.getBody().isLegendary()).isFalse();
+
+        RecordedRequest pokeApiRequest = POKE_API.takeRequest(1, TimeUnit.SECONDS);
+        assertThat(pokeApiRequest).isNotNull();
+        assertThat(pokeApiRequest.getPath()).isEqualTo("/api/v2/pokemon-species/pikachu");
+
+        RecordedRequest translationRequest = FUN_TRANSLATIONS.takeRequest(1, TimeUnit.SECONDS);
+        assertThat(translationRequest).isNotNull();
+        assertThat(translationRequest.getPath()).isEqualTo("/translate/shakespeare");
+        assertThat(translationRequest.getMethod()).isEqualTo("POST");
     }
 
     private static MockWebServer startServer() {

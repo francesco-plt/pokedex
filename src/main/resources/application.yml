@@ -9,3 +9,5 @@ spring:
         config:
           poke-api-client:
             url: https://pokeapi.co/api/v2
+          funtranslations-client:
+            url: https://api.funtranslations.mercxry.me/v1

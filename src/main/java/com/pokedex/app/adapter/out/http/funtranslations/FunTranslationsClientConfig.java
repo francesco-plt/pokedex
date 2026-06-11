@@ -1,4 +1,4 @@
-package com.pokedex.app.adapter.out.http.pokeapi;
+package com.pokedex.app.adapter.out.http.funtranslations;
 
 import feign.Client;
 import feign.Retryer;
@@ -7,10 +7,10 @@ import feign.okhttp.OkHttpClient;
 import java.time.Duration;
 import org.springframework.context.annotation.Bean;
 
-public class PokeApiClientConfig {
+public class FunTranslationsClientConfig {
 
     @Bean
-    public okhttp3.OkHttpClient pokeApiOkHttpClient() {
+    public okhttp3.OkHttpClient funTranslationsOkHttpClient() {
         return new okhttp3.OkHttpClient.Builder()
             .connectTimeout(Duration.ofSeconds(2))
             .readTimeout(Duration.ofSeconds(5))
@@ -20,17 +20,17 @@ public class PokeApiClientConfig {
     }
 
     @Bean
-    public Client feignClient(okhttp3.OkHttpClient pokeApiOkHttpClient) {
-        return new OkHttpClient(pokeApiOkHttpClient);
+    public Client funTranslationsFeignClient(okhttp3.OkHttpClient funTranslationsOkHttpClient) {
+        return new OkHttpClient(funTranslationsOkHttpClient);
     }
 
     @Bean
-    public Retryer feignRetryer() {
+    public Retryer funTranslationsFeignRetryer() {
         return Retryer.NEVER_RETRY;
     }
 
     @Bean
-    public ErrorDecoder pokeApiErrorDecoder() {
-        return new PokeApiErrorDecoder();
+    public ErrorDecoder funTranslationsErrorDecoder() {
+        return new FunTranslationsErrorDecoder();
     }
 }

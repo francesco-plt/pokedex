@@ -7,5 +7,6 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public interface LoadPokemonPort {
 
+    @NotNull
     Pokemon getPokemonByName(@NotNull String name);
 }
