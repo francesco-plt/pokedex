@@ -7,7 +7,7 @@ Spring Boot service that fetches Pokemon species data from PokeAPI and exposes:
 The codebase follows a ports-and-adapters (hexagonal) structure.
 
 ## Endpoints
-- `GET /hello_world` -> `"Hello World!"`
+- `GET /health` -> `"UP"`
 - `GET /api/v1/pokemon/{name}` -> Pokemon details from PokeAPI
 - `GET /api/v1/pokemon/translated/{name}` -> Pokemon details with translated description
 
@@ -65,7 +65,7 @@ Start app:
 
 Smoke test:
 ```bash
-http :8080/hello_world
+http :8080/health
 http :8080/api/v1/pokemon/pikachu
 http :8080/api/v1/pokemon/translated/zubat
 ```

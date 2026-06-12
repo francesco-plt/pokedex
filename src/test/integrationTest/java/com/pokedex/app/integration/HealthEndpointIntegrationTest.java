@@ -10,16 +10,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class HelloEndpointIntegrationTest {
+class HealthEndpointIntegrationTest {
 
     @Autowired
     private TestRestTemplate restTemplate;
 
     @Test
-    void shouldExposeHelloWorldEndpoint() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/hello_world", String.class);
+    void shouldExposeHealthEndpoint() {
+        ResponseEntity<String> response = restTemplate.getForEntity("/health", String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo("Hello World!");
+        assertThat(response.getBody()).isEqualTo("UP");
     }
 }
