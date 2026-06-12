@@ -8,13 +8,8 @@
 ## Why Spring Data JDBC
 - Lower complexity than JPA/Hibernate for CRUD-style aggregates.
 - Transparent SQL and explicit aggregate boundaries.
-- Easier performance reasoning for backend teams.
-
-## Transaction boundaries
-- Transactions belong to application services (use-case implementations).
-- Domain remains framework-free and side-effect free.
+- Easier performance reasoning for backend developers.
 
 ## Scalability path
-- Split modules later (`domain`, `application`, `adapters`, `bootstrap`).
-- Add outbox + CDC for reliable integration events.
-- Add contract tests for external adapters.
+- Add contract tests for external adapters (see `architectureTests`)
+- Improve abstraction and avoid injecting concrete implementations directly for services at `com.pokedex.app.service`
