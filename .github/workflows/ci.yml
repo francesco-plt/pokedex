@@ -33,6 +33,9 @@ jobs:
       - name: Architecture Tests
         run: ./gradlew architectureTest
 
+      - name: Coverage Report and Gate
+        run: ./gradlew jacocoTestReport jacocoTestCoverageVerification
+
       - name: Build
         run: ./gradlew clean assemble
 

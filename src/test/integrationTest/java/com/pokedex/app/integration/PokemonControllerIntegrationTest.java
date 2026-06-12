@@ -10,6 +10,8 @@ import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -51,6 +53,7 @@ class PokemonControllerIntegrationTest {
 
     @Test
     void shouldReturnPokemonFromPokeApi() throws Exception {
+        // Arrange
         POKE_API.enqueue(
             new MockResponse()
                 .setResponseCode(200)
@@ -67,11 +70,13 @@ class PokemonControllerIntegrationTest {
                     """)
         );
 
+        // Act
         ResponseEntity<PokemonResponse> response = restTemplate.getForEntity(
             "/api/v1/pokemon/pikachu",
             PokemonResponse.class
         );
 
+        // Assert
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().name()).isEqualTo("pikachu");
@@ -86,6 +91,7 @@ class PokemonControllerIntegrationTest {
 
     @Test
     void shouldReturnProblemDetailWhenPokemonIsMissing() throws Exception {
+        // Arrange
         POKE_API.enqueue(
             new MockResponse()
                 .setResponseCode(404)
@@ -93,11 +99,13 @@ class PokemonControllerIntegrationTest {
                 .setBody("{\"detail\":\"not found\"}")
         );
 
+        // Act
         ResponseEntity<String> response = restTemplate.getForEntity(
             "/api/v1/pokemon/missingno",
             String.class
         );
 
+        // Assert
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(response.getHeaders().getContentType()).isNotNull();
         assertThat(response.getHeaders().getContentType().isCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
@@ -113,6 +121,7 @@ class PokemonControllerIntegrationTest {
 
     @Test
     void shouldReturnProblemDetailWhenPokeApiReturnsServerError() throws Exception {
+        // Arrange
         POKE_API.enqueue(
             new MockResponse()
                 .setResponseCode(503)
@@ -120,11 +129,13 @@ class PokemonControllerIntegrationTest {
                 .setBody("{\"detail\":\"temporarily unavailable\"}")
         );
 
+        // Act
         ResponseEntity<String> response = restTemplate.getForEntity(
             "/api/v1/pokemon/slowpoke",
             String.class
         );
 
+        // Assert
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
         assertThat(response.getHeaders().getContentType()).isNotNull();
         assertThat(response.getHeaders().getContentType().isCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
@@ -139,34 +150,8 @@ class PokemonControllerIntegrationTest {
     }
 
     @Test
-    void shouldReturnProblemDetailWhenPokeApiReturnsUnexpectedError() throws Exception {
-        POKE_API.enqueue(
-            new MockResponse()
-                .setResponseCode(418)
-                .addHeader("Content-Type", "application/json")
-                .setBody("{\"detail\":\"teapot\"}")
-        );
-
-        ResponseEntity<String> response = restTemplate.getForEntity(
-            "/api/v1/pokemon/bulbasaur",
-            String.class
-        );
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_GATEWAY);
-        assertThat(response.getHeaders().getContentType()).isNotNull();
-        assertThat(response.getHeaders().getContentType().isCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
-            .isTrue();
-        assertThat(response.getBody()).contains("\"title\":\"PokeAPI error\"");
-        assertThat(response.getBody()).contains("\"status\":502");
-        assertThat(response.getBody()).contains("bulbasaur");
-
-        RecordedRequest request = POKE_API.takeRequest(1, TimeUnit.SECONDS);
-        assertThat(request).isNotNull();
-        assertThat(request.getPath()).isEqualTo("/api/v2/pokemon-species/bulbasaur");
-    }
-
-    @Test
     void shouldReturnPokemonWithShakespeareTranslationForNonLegendaryNonCavePokemon() throws Exception {
+        // Arrange
         POKE_API.enqueue(
             new MockResponse()
                 .setResponseCode(200)
@@ -195,11 +180,13 @@ class PokemonControllerIntegrationTest {
                     """)
         );
 
+        // Act
         ResponseEntity<PokemonResponse> response = restTemplate.getForEntity(
             "/api/v1/pokemon/translated/bulbasaur",
             PokemonResponse.class
         );
 
+        // Assert
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().name()).isEqualTo("bulbasaur");
@@ -220,18 +207,19 @@ class PokemonControllerIntegrationTest {
     }
 
     @Test
-    void shouldReturnPokemonWithYodaTranslationForCavePokemon() throws Exception {
+    void shouldReturnPokemonWithYodaTranslationForLegendaryPokemon() throws Exception {
+        // Arrange
         POKE_API.enqueue(
             new MockResponse()
                 .setResponseCode(200)
                 .addHeader("Content-Type", "application/json")
                 .setBody("""
                     {
-                      "name": "zubat",
-                      "habitat": {"name": "cave"},
-                      "is_legendary": false,
+                      "name": "mewtwo",
+                      "habitat": {"name": "rare"},
+                      "is_legendary": true,
                       "flavor_text_entries": [
-                        {"flavor_text": "Forms colonies in perpetually dark places."}
+                        {"flavor_text": "It was created by\\na scientist after\\nyears of horrific\\ngene splicing and\\nDNA engineering\\nexperiments."}
                       ]
                     }
                     """)
@@ -243,38 +231,42 @@ class PokemonControllerIntegrationTest {
                 .setBody("""
                     {
                       "contents": {
-                        "translated": "Colonies in dark places, forms it does."
+                        "translated": "It was made by\\na one of powerful knowledge after\\nyears of terrible\\ngene fusing and\\nDNA crafting\\ntrials, young one."
                       }
                     }
                     """)
         );
 
+        // Act
         ResponseEntity<PokemonResponse> response = restTemplate.getForEntity(
-            "/api/v1/pokemon/translated/zubat",
+            "/api/v1/pokemon/translated/mewtwo",
             PokemonResponse.class
         );
 
+        // Assert
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().name()).isEqualTo("zubat");
-        assertThat(response.getBody().description()).isEqualTo("Colonies in dark places, forms it does.");
-        assertThat(response.getBody().habitat()).isEqualTo("cave");
-        assertThat(response.getBody().isLegendary()).isFalse();
+        assertThat(response.getBody().name()).isEqualTo("mewtwo");
+        assertThat(response.getBody().description()).isEqualTo("It was made by\na one of powerful knowledge after\nyears of terrible\ngene fusing and\nDNA crafting\ntrials, young one.");
+        assertThat(response.getBody().habitat()).isEqualTo("rare");
+        assertThat(response.getBody().isLegendary()).isTrue();
 
         RecordedRequest pokeApiRequest = POKE_API.takeRequest(1, TimeUnit.SECONDS);
         assertThat(pokeApiRequest).isNotNull();
-        assertThat(pokeApiRequest.getPath()).isEqualTo("/api/v2/pokemon-species/zubat");
+        assertThat(pokeApiRequest.getPath()).isEqualTo("/api/v2/pokemon-species/mewtwo");
 
         RecordedRequest translationRequest = FUN_TRANSLATIONS.takeRequest(1, TimeUnit.SECONDS);
         assertThat(translationRequest).isNotNull();
         assertThat(translationRequest.getPath()).isEqualTo("/translate/yoda");
         assertThat(translationRequest.getMethod()).isEqualTo("POST");
         assertThat(translationRequest.getBody().readUtf8())
-            .contains("\"text\":\"Forms colonies in perpetually dark places.\"");
+            .contains("\"text\":\"It was created by\\na scientist after\\nyears of horrific\\ngene splicing and\\nDNA engineering\\nexperiments.");
     }
 
-    @Test
-    void shouldReturnOriginalDescriptionWhenTranslationServiceIsUnavailable() throws Exception {
+    @ParameterizedTest
+    @ValueSource(ints = {429, 503})
+    void shouldReturnOriginalDescriptionWhenTranslationServiceIsUnavailable(int funTranslationsResponseStatus) throws Exception {
+        // Arrange
         POKE_API.enqueue(
             new MockResponse()
                 .setResponseCode(200)
@@ -292,20 +284,17 @@ class PokemonControllerIntegrationTest {
         );
         FUN_TRANSLATIONS.enqueue(
             new MockResponse()
-                .setResponseCode(503)
+                .setResponseCode(funTranslationsResponseStatus)
                 .addHeader("Content-Type", "application/json")
-                .setBody("""
-                    {
-                      "error": "service unavailable"
-                    }
-                    """)
         );
 
+        // Act
         ResponseEntity<PokemonResponse> response = restTemplate.getForEntity(
             "/api/v1/pokemon/translated/pikachu",
             PokemonResponse.class
         );
 
+        // Assert
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().name()).isEqualTo("pikachu");

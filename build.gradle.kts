@@ -6,6 +6,8 @@ import org.gradle.api.tasks.testing.Test
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.kotlin.dsl.*
 import org.gradle.language.base.plugins.LifecycleBasePlugin
+import org.gradle.testing.jacoco.tasks.JacocoCoverageVerification
+import org.gradle.testing.jacoco.tasks.JacocoReport
 
 plugins {
     java
@@ -120,6 +122,55 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
     testLogging {
         events("passed", "skipped", "failed")
+    }
+}
+
+val jacocoExcludes =
+    listOf(
+        "**/PokeApiClientConfig.class",
+        "**/FunTranslationsClientConfig.class",
+    )
+
+tasks.named<JacocoReport>("jacocoTestReport") {
+    executionData.setFrom(
+        fileTree(layout.buildDirectory.get().asFile) {
+            include(
+                "jacoco/test.exec",
+                "jacoco/integrationTest.exec",
+                "jacoco/architectureTest.exec",
+            )
+        }
+    )
+    classDirectories.setFrom(
+        sourceSets["main"].output.asFileTree.matching {
+            exclude(jacocoExcludes)
+        }
+    )
+}
+
+tasks.named<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    executionData.setFrom(
+        fileTree(layout.buildDirectory.get().asFile) {
+            include(
+                "jacoco/test.exec",
+                "jacoco/integrationTest.exec",
+                "jacoco/architectureTest.exec",
+            )
+        }
+    )
+    classDirectories.setFrom(
+        sourceSets["main"].output.asFileTree.matching {
+            exclude(jacocoExcludes)
+        }
+    )
+    violationRules {
+        rule {
+            limit {
+                counter = "INSTRUCTION"
+                value = "COVEREDRATIO"
+                minimum = "0.80".toBigDecimal()
+            }
+        }
     }
 }
 
