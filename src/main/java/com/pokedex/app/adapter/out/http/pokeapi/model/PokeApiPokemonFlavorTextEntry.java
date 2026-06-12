@@ -8,7 +8,8 @@ import lombok.Builder;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record PokeApiPokemonFlavorTextEntry(
         @JsonProperty("flavor_text")
-        String flavorText) {
+        String flavorText,
+        PokeApiPokemonLanguage language) {
 
     public PokeApiPokemonFlavorTextEntry {
         if (flavorText != null) {

@@ -54,7 +54,7 @@ Additional context:
 ## Run locally
 Requirements:
 - git
-- Java 25 
+- Java 25
 - Gradle
 
 

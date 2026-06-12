@@ -64,7 +64,7 @@ class PokemonControllerIntegrationTest {
                       "habitat": {"name": "forest"},
                       "is_legendary": false,
                       "flavor_text_entries": [
-                        {"flavor_text": "electric\\fmouse"}
+                        {"flavor_text": "electric\\fmouse", "language": {"name": "en"}}
                       ]
                     }
                     """)
@@ -162,7 +162,7 @@ class PokemonControllerIntegrationTest {
                       "habitat": {"name": "forest"},
                       "is_legendary": false,
                       "flavor_text_entries": [
-                        {"flavor_text": "A strange seed was planted on its back."}
+                        {"flavor_text": "A strange seed was planted on its back.", "language": {"name": "en"}}
                       ]
                     }
                     """)
@@ -219,7 +219,7 @@ class PokemonControllerIntegrationTest {
                       "habitat": {"name": "rare"},
                       "is_legendary": true,
                       "flavor_text_entries": [
-                        {"flavor_text": "It was created by\\na scientist after\\nyears of horrific\\ngene splicing and\\nDNA engineering\\nexperiments."}
+                        {"flavor_text": "It was created by\\na scientist after\\nyears of horrific\\ngene splicing and\\nDNA engineering\\nexperiments.", "language": {"name": "en"}}
                       ]
                     }
                     """)
@@ -277,7 +277,7 @@ class PokemonControllerIntegrationTest {
                       "habitat": {"name": "forest"},
                       "is_legendary": false,
                       "flavor_text_entries": [
-                        {"flavor_text": "Electric type pokemon."}
+                        {"flavor_text": "Electric type pokemon.", "language": {"name": "en"}}
                       ]
                     }
                     """)
